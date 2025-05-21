@@ -1,0 +1,83 @@
+
+7) Write PL/SQL Procedure & function to find class [Distinction (Total marks from
+1499 to 990) ,First Class( 899 to 900) Higher Second (899 to 825) ,Second,Pass (824
+to 750) ] of a student based on total marks from table Student (rollno, name,
+Marks1, Marks2, Marks3, Marks4, Marks5).
+Use exception handling when negative marks are entered by user(Marks<0) or Marks
+more than 100 are entered by user.. Store the result into Result table recording
+RollNo,total marks, and class for each student .
+CREATE TABLE Student (
+rollno INT PRIMARY KEY,
+name VARCHAR(100),
+Marks1 INT,
+Marks2 INT,
+Marks3 INT,
+Marks4 INT,
+Marks5 INT
+);
+CREATE TABLE Result (
+rollno INT,
+total_marks INT,
+class VARCHAR(30)
+);
+DELIMITER $$
+CREATE FUNCTION get_class(total INT) RETURNS VARCHAR(30)
+DETERMINISTIC
+BEGIN
+DECLARE result VARCHAR(30);
+IF total BETWEEN 990 AND 1499 THEN
+
+SET result = 'Distinction';
+ELSEIF total BETWEEN 900 AND 989 THEN
+SET result = 'First Class';
+ELSEIF total BETWEEN 825 AND 899 THEN
+SET result = 'Higher Second';
+ELSEIF total BETWEEN 750 AND 824 THEN
+SET result = 'Second, Pass';
+ELSE
+SET result = 'Fail';
+END IF;
+RETURN result;
+END$$
+DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE classify_students()
+BEGIN
+DECLARE done INT DEFAULT 0;
+DECLARE rno INT;
+DECLARE m1 INT;
+DECLARE m2 INT;
+DECLARE m3 INT;
+DECLARE m4 INT;
+DECLARE m5 INT;
+DECLARE tname VARCHAR(100);
+
+DECLARE total INT;
+DECLARE class_type VARCHAR(30);
+DECLARE cur CURSOR FOR SELECT rollno, name, Marks1, Marks2, Marks3, Marks4, Marks5 FROM Student;
+DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+OPEN cur;
+read_loop: LOOP
+FETCH cur INTO rno, tname, m1, m2, m3, m4, m5;
+IF done THEN
+LEAVE read_loop;
+END IF;
+-- Exception Handling: Check for invalid marks
+IF m1 < 0 OR m1 > 100 OR m2 < 0 OR m2 > 100 OR m3 < 0 OR m3 > 100 OR m4 < 0 OR m4 > 100 OR m5
+< 0 OR m5 > 100 THEN
+SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Invalid marks: Marks should be between 0 and 100';
+END IF;
+SET total = m1 + m2 + m3 + m4 + m5;
+SET class_type = get_class(total);
+INSERT INTO Result (rollno, total_marks, class) VALUES (rno, total, class_type);
+END LOOP;
+CLOSE cur;
+END$$
+DELIMITER ;
+INSERT INTO Student VALUES (1, 'Amit', 98, 96, 92, 90, 89);
+INSERT INTO Student VALUES (2, 'Sneha', 100, 99, 98, 97, 96);
+INSERT INTO Student VALUES (3, 'Rahul', 90, 85, 88, 84, 80);
+INSERT INTO Student VALUES (4, 'Riya', 100, 100, 100, 100, 100);
+CALL classify_students();
+SELECT * FROM Result;

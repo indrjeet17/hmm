@@ -1,0 +1,71 @@
+2: Draw an ER for Company database with atleast 4 entities and convert them into
+tables.
+Perform DDL on Above converted tables.
+1. Create tables with all constraints
+2. create views on any two tables using conditions
+3. create index called EmployeeId for the department table. Entries should be in
+ascending order by department id and then by employee id within each department.
+4. create sequence on Employee id.
+CREATE TABLE Department (
+DeptID INT PRIMARY KEY,
+DeptName VARCHAR(50) NOT NULL
+);
+CREATE TABLE Employee (
+EmpID INT AUTO_INCREMENT PRIMARY KEY,
+EmpName VARCHAR(50) NOT NULL,
+Gender VARCHAR(10),
+Salary DECIMAL(10, 2) CHECK (Salary > 0),
+DeptID INT,
+FOREIGN KEY (DeptID) REFERENCES Department(DeptID)
+);
+CREATE TABLE Project (
+ProjID INT PRIMARY KEY,
+ProjName VARCHAR(100) NOT NULL,
+Budget DECIMAL(12, 2) CHECK (Budget >= 0)
+);
+CREATE TABLE Works_On (
+EmpID INT,
+ProjID INT,
+HoursWorked DECIMAL(5,2) CHECK (HoursWorked >= 0),
+PRIMARY KEY (EmpID, ProjID),
+FOREIGN KEY (EmpID) REFERENCES Employee(EmpID),
+FOREIGN KEY (ProjID) REFERENCES Project(ProjID)
+);
+-- Departments
+INSERT INTO Department (DeptID, DeptName) VALUES
+(1, 'HR'),
+(2, 'IT'),
+(3, 'Finance');
+-- Employees
+INSERT INTO Employee (EmpName, Gender, Salary, DeptID) VALUES
+
+('Isha', 'Female', 60000, 1),
+('Raj', 'Male', 75000, 2),
+('Amit', 'Male', 45000, 1),
+('Sneha', 'Female', 90000, 3);
+-- Projects
+INSERT INTO Project (ProjID, ProjName, Budget) VALUES
+(101, 'ERP System', 200000),
+(102, 'Mobile App', 50000),
+(103, 'AI Research', 150000);
+-- Works_On (Employees working on Projects)
+INSERT INTO Works_On (EmpID, ProjID, HoursWorked) VALUES
+(1, 101, 40),
+(2, 101, 35),
+(2, 103, 20),
+(4, 103, 30);
+CREATE VIEW HighSalaryEmployees AS
+SELECT e.EmpID, e.EmpName, e.Salary, d.DeptName
+FROM Employee e
+JOIN Department d ON e.DeptID = d.DeptID
+WHERE e.Salary > 50000;
+CREATE VIEW ProjectAssignments AS
+SELECT p.ProjName, e.EmpName, w.HoursWorked
+FROM Works_On w
+JOIN Employee e ON w.EmpID = e.EmpID
+JOIN Project p ON w.ProjID = p.ProjID;
+CREATE INDEX EmployeeId
+ON Employee (DeptID ASC, EmpID ASC);
+SELECT * FROM Employee;
+SELECT * FROM Department;
+SELECT * FROM HighSalaryEmploye
